@@ -1,10 +1,13 @@
 namespace Units;
 
+/// <summary>
+/// millimetre
+/// </summary>
 public readonly struct mm
 {
     public static string Name => @"millimetre";
     public static string Tex => @"\milli\metre";
-    public static string Code => @"mm";
+    public static string Suffix => @"mm";
     public readonly double Value;
     public mm(double value)
     {
@@ -46,14 +49,22 @@ public readonly struct mm
         return new(x.Value * 1000.0);
     }
 
+    public override string ToString()
+    {
+        return $"{Value}{Suffix}";
+    }
+
 }
 
 
+/// <summary>
+/// gram
+/// </summary>
 public readonly struct g
 {
     public static string Name => @"gram";
     public static string Tex => @"\gram";
-    public static string Code => @"g";
+    public static string Suffix => @"g";
     public readonly double Value;
     public g(double value)
     {
@@ -100,14 +111,22 @@ public readonly struct g
         return new(x.Value * 1000000.0);
     }
 
+    public override string ToString()
+    {
+        return $"{Value}{Suffix}";
+    }
+
 }
 
 
+/// <summary>
+/// second
+/// </summary>
 public readonly struct sec
 {
     public static string Name => @"second";
     public static string Tex => @"\second";
-    public static string Code => @"sec";
+    public static string Suffix => @"s";
     public readonly double Value;
     public sec(double value)
     {
@@ -149,14 +168,22 @@ public readonly struct sec
         return new(a.Value * b.Value);
     }
 
+    public override string ToString()
+    {
+        return $"{Value}{Suffix}";
+    }
+
 }
 
 
+/// <summary>
+/// metre
+/// </summary>
 public readonly struct m
 {
     public static string Name => @"metre";
     public static string Tex => @"\metre";
-    public static string Code => @"m";
+    public static string Suffix => @"m";
     public readonly double Value;
     public m(double value)
     {
@@ -218,14 +245,22 @@ public readonly struct m
         return new(a.Value * b.Value);
     }
 
+    public override string ToString()
+    {
+        return $"{Value}{Suffix}";
+    }
+
 }
 
 
+/// <summary>
+/// metre^2
+/// </summary>
 public readonly struct m2
 {
     public static string Name => @"metre^2";
     public static string Tex => @"\metre^2";
-    public static string Code => @"m2";
+    public static string Suffix => @"m^2";
     public readonly double Value;
     public m2(double value)
     {
@@ -267,14 +302,22 @@ public readonly struct m2
         return new(a.Value / b.Value);
     }
 
+    public override string ToString()
+    {
+        return $"{Value}{Suffix}";
+    }
+
 }
 
 
+/// <summary>
+/// second^2
+/// </summary>
 public readonly struct sec2
 {
     public static string Name => @"second^2";
     public static string Tex => @"\second^2";
-    public static string Code => @"sec2";
+    public static string Suffix => @"s^2";
     public readonly double Value;
     public sec2(double value)
     {
@@ -316,14 +359,22 @@ public readonly struct sec2
         return new(a.Value / b.Value);
     }
 
+    public override string ToString()
+    {
+        return $"{Value}{Suffix}";
+    }
+
 }
 
 
+/// <summary>
+/// kilogram
+/// </summary>
 public readonly struct kg
 {
     public static string Name => @"kilogram";
     public static string Tex => @"\kilo\gram";
-    public static string Code => @"kg";
+    public static string Suffix => @"kg";
     public readonly double Value;
     public kg(double value)
     {
@@ -370,14 +421,22 @@ public readonly struct kg
         return new(x.Value * 1000.0);
     }
 
+    public override string ToString()
+    {
+        return $"{Value}{Suffix}";
+    }
+
 }
 
 
+/// <summary>
+/// tonne
+/// </summary>
 public readonly struct tonne
 {
     public static string Name => @"tonne";
     public static string Tex => @"\tonne";
-    public static string Code => @"tonne";
+    public static string Suffix => @"t";
     public readonly double Value;
     public tonne(double value)
     {
@@ -424,14 +483,22 @@ public readonly struct tonne
         return new(x.Value / 1000000.0);
     }
 
+    public override string ToString()
+    {
+        return $"{Value}{Suffix}";
+    }
+
 }
 
 
+/// <summary>
+/// metres per second
+/// </summary>
 public readonly struct m_s
 {
     public static string Name => @"metres per second";
     public static string Tex => @"\metre/\second";
-    public static string Code => @"m_s";
+    public static string Suffix => @"m/s";
     public readonly double Value;
     public m_s(double value)
     {
@@ -471,6 +538,11 @@ public readonly struct m_s
     public static sec operator *(m_s a, m b)
     {
         return new(a.Value * b.Value);
+    }
+
+    public override string ToString()
+    {
+        return $"{Value}{Suffix}";
     }
 
 }

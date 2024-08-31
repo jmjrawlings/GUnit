@@ -4,31 +4,35 @@ var mm = new Unit
 {
     Name = "millimetre",
     Class = "mm",
-    Tex = @"\milli\metre"
+    Tex = @"\milli\metre",
+    Suffix="mm"
 };
 
 var g = new Unit
 {
     Name = "gram",
     Tex = @"\gram",
-    Class = "g"
+    Class = "g",
+    Suffix="g"
 };
 
 var s = new Unit
 {
     Name = "second",
     Class = "sec",
-    Tex = @"\second"
+    Tex = @"\second",
+    Suffix="s"
+    
 };
 var s2 = s ^ 2;
-var m = (mm * 1000) with { Name = "metre", Tex = @"\metre", Class = "m" };
+var m = (mm * 1000) with { Name = "metre", Tex = @"\metre", Class = "m", Suffix = "m"};
 var m2 = m ^ 2;
 // var mm2 = mm ^ 2;
 // var mm3 = mm ^ 3;
 // var mm4 = mm ^ 4;
-var kg = (1000 * g) with { Name = "kilogram", Tex = @"\kilo\gram", Class = "kg" };
-var tonne = (kg * 1000) with { Name = "tonne", Tex = @"\tonne", Class = "tonne" };
-var m_s = (m / s) with { Name = "metres per second", Class = "m_s" };
+var kg = (1000 * g) with { Name = "kilogram", Tex = @"\kilo\gram", Class = "kg" , Suffix = "kg"};
+var tonne = (kg * 1000) with { Name = "tonne", Tex = @"\tonne", Class = "tonne", Suffix = "t"};
+var m_s = (m / s) with { Name = "metres per second", Class = "m_s", Suffix= "m/s" };
 // var N = (kg * m_s) with { Name = "newton", Tex = @"\newton", Class = "N" };
 // var kN = (1000 * N) with { Name = "kilonewton", Tex = @"\kilo\newton", Class = "kN" };
 // var Pa = (N / m2) with { Name = "pascal", Tex = @"\pascal", Class = "Pa" };
@@ -65,10 +69,11 @@ void WriteUnitClass(Unit unit)
 
     var t = unit.Class!;
     var cb = unit.Code;
+    cb.Summary(unit.Name);
     cb.Block("public", "readonly", "struct", t);
     cb.WriteLn($"public static string Name => @\"{unit.Name}\";");
     cb.WriteLn($"public static string Tex => @\"{unit.Tex}\";");
-    cb.WriteLn($"public static string Code => @\"{unit.Class}\";");
+    cb.WriteLn($"public static string Suffix => @\"{unit.Suffix}\";");
     cb.Declare("public readonly double", "Value");
     
     using (cb.Function($"public {t}", "double value"))
@@ -175,6 +180,9 @@ cb.WriteLn("namespace Units;");
 cb.NewLine();
 foreach (var unit in unitArray)
 {
+    using (unit.Code.Block("public override string ToString()"))
+        unit.Code.Return("$\"{Value}{Suffix}\"");
+    
     unit.Code.Dispose();
     code = unit.Code.ToString();
     // foreach (var line in code.Split('\n', StringSplitOptions.RemoveEmptyEntries))
