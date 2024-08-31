@@ -72,9 +72,7 @@ void WriteUnitClass(Unit unit)
     cb.Declare("public readonly double", "Value");
     
     using (cb.Function($"public {t}", "double value"))
-    {
         cb.Assign("Value", "value");
-    }
 
     using (cb.Operator(t, "*", $"{t} a, int b"))
         cb.Return("new(a.Value * b)");
@@ -140,9 +138,11 @@ foreach (var unit in unitArray)
 {
     unit.Code.Dispose();
     code = unit.Code.ToString();
-    foreach (var line in code.Split('\n', StringSplitOptions.RemoveEmptyEntries))
-        cb.Write(line);
+    // foreach (var line in code.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+    cb.Write(code);
+    cb.NewLine();
 }
+
 cb.Dispose();
 code = cb.ToString();
 File.WriteAllText("C:/Users/hrkn/projects/GUnit/Unit.gen.cs", code);

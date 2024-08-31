@@ -20,6 +20,10 @@ public class CodeBuilder : IDisposable
     // Current indentation level
     protected int _indent;
 
+    const int TAB_SIZE = 4;
+
+    const char SPACE = (char)32;
+    
     // All created scopes
     private Stack<Scope>? _scopes;
 
@@ -58,13 +62,13 @@ public class CodeBuilder : IDisposable
         _sb = new StringBuilder();
         _scopes = new();
     }
-
+    
     /// <summary>
     /// Write the given string at the current level of indentation
     /// </summary>
     public void Write(string? s)
     {
-        _sb.Append('\t', _indent);
+        _sb.Append(SPACE, _indent*TAB_SIZE);
         if (s is not null)
             Append(s);
     }
@@ -94,7 +98,7 @@ public class CodeBuilder : IDisposable
     /// </summary>
     public void Write(char c)
     {
-        _sb.Append('\t', _indent);
+        _sb.Append(SPACE, _indent*TAB_SIZE);
         Append(c);
     }
 
@@ -208,7 +212,7 @@ public class CodeBuilder : IDisposable
 
     public IDisposable Implicit(string returns, string type, string name)
     {
-        Append("public static implicit operator ");
+        Write("public static implicit operator ");
         Append(returns);
         Append('(');
         Append(type);
@@ -221,7 +225,7 @@ public class CodeBuilder : IDisposable
 
     public IDisposable Operator(string returns, string symbol, params string[] args)
     {
-        Append("public static ");
+        Write("public static ");
         Append(returns);
         Space();
         Append("operator ");
