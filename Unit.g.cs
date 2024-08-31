@@ -11,6 +11,16 @@ public readonly struct mm
         Value = value;
     }
 
+    public static explicit operator mm(double value)
+    {
+        return new(value);
+    }
+
+    public static explicit operator mm(int value)
+    {
+        return new(value);
+    }
+
     public static mm operator *(mm a, int b)
     {
         return new(a.Value * b);
@@ -48,6 +58,16 @@ public readonly struct g
     public g(double value)
     {
         Value = value;
+    }
+
+    public static explicit operator g(double value)
+    {
+        return new(value);
+    }
+
+    public static explicit operator g(int value)
+    {
+        return new(value);
     }
 
     public static g operator *(g a, int b)
@@ -94,6 +114,16 @@ public readonly struct sec
         Value = value;
     }
 
+    public static explicit operator sec(double value)
+    {
+        return new(value);
+    }
+
+    public static explicit operator sec(int value)
+    {
+        return new(value);
+    }
+
     public static sec operator *(sec a, int b)
     {
         return new(a.Value * b);
@@ -131,6 +161,16 @@ public readonly struct m
     public m(double value)
     {
         Value = value;
+    }
+
+    public static explicit operator m(double value)
+    {
+        return new(value);
+    }
+
+    public static explicit operator m(int value)
+    {
+        return new(value);
     }
 
     public static m operator *(m a, int b)
@@ -192,6 +232,16 @@ public readonly struct m2
         Value = value;
     }
 
+    public static explicit operator m2(double value)
+    {
+        return new(value);
+    }
+
+    public static explicit operator m2(int value)
+    {
+        return new(value);
+    }
+
     public static m2 operator *(m2 a, int b)
     {
         return new(a.Value * b);
@@ -231,6 +281,16 @@ public readonly struct sec2
         Value = value;
     }
 
+    public static explicit operator sec2(double value)
+    {
+        return new(value);
+    }
+
+    public static explicit operator sec2(int value)
+    {
+        return new(value);
+    }
+
     public static sec2 operator *(sec2 a, int b)
     {
         return new(a.Value * b);
@@ -268,6 +328,16 @@ public readonly struct kg
     public kg(double value)
     {
         Value = value;
+    }
+
+    public static explicit operator kg(double value)
+    {
+        return new(value);
+    }
+
+    public static explicit operator kg(int value)
+    {
+        return new(value);
     }
 
     public static kg operator *(kg a, int b)
@@ -314,6 +384,16 @@ public readonly struct tonne
         Value = value;
     }
 
+    public static explicit operator tonne(double value)
+    {
+        return new(value);
+    }
+
+    public static explicit operator tonne(int value)
+    {
+        return new(value);
+    }
+
     public static tonne operator *(tonne a, int b)
     {
         return new(a.Value * b);
@@ -356,6 +436,16 @@ public readonly struct m_s
     public m_s(double value)
     {
         Value = value;
+    }
+
+    public static explicit operator m_s(double value)
+    {
+        return new(value);
+    }
+
+    public static explicit operator m_s(int value)
+    {
+        return new(value);
     }
 
     public static m_s operator *(m_s a, int b)

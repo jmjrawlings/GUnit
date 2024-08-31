@@ -73,7 +73,13 @@ void WriteUnitClass(Unit unit)
     
     using (cb.Function($"public {t}", "double value"))
         cb.Assign("Value", "value");
-
+    
+    using (cb.Explicit(t, "double", "value"))
+        cb.Return("new(value)");
+    
+    using (cb.Explicit(t, "int", "value"))
+        cb.Return("new(value)");
+    
     using (cb.Operator(t, "*", $"{t} a, int b"))
         cb.Return("new(a.Value * b)");
 

@@ -222,7 +222,20 @@ public class CodeBuilder : IDisposable
         NewLine();
         return Block();
     }
-
+    
+    public IDisposable Explicit(string returns, string type, string name)
+    {
+        Write("public static explicit operator ");
+        Append(returns);
+        Append('(');
+        Append(type);
+        Space();
+        Append(name);
+        Append(')');
+        NewLine();
+        return Block();
+    }
+    
     public IDisposable Operator(string returns, string symbol, params string[] args)
     {
         Write("public static ");
