@@ -75,6 +75,11 @@ public readonly struct g
         return new(x.Value * 1000.0);
     }
 
+    public static implicit operator g(tonne x)
+    {
+        return new(x.Value * 1000000.0);
+    }
+
 }
 
 
@@ -107,6 +112,11 @@ public readonly struct sec
     public static sec operator *(double a, sec b)
     {
         return new(a * b.Value);
+    }
+
+    public static sec2 operator *(sec a, sec b)
+    {
+        return new(a.Value * b.Value);
     }
 
 }
@@ -148,9 +158,24 @@ public readonly struct m
         return new(x.Value / 1000.0);
     }
 
+    public static m2 operator *(m a, m b)
+    {
+        return new(a.Value * b.Value);
+    }
+
     public static m_s operator /(m a, sec b)
     {
         return new(a.Value / b.Value);
+    }
+
+    public static sec operator /(m a, m_s b)
+    {
+        return new(a.Value / b.Value);
+    }
+
+    public static sec operator *(m a, m_s b)
+    {
+        return new(a.Value * b.Value);
     }
 
 }
@@ -187,6 +212,11 @@ public readonly struct m2
         return new(a * b.Value);
     }
 
+    public static m operator /(m2 a, m b)
+    {
+        return new(a.Value / b.Value);
+    }
+
 }
 
 
@@ -219,6 +249,11 @@ public readonly struct sec2
     public static sec2 operator *(double a, sec2 b)
     {
         return new(a * b.Value);
+    }
+
+    public static sec operator /(sec2 a, sec b)
+    {
+        return new(a.Value / b.Value);
     }
 
 }
@@ -304,6 +339,11 @@ public readonly struct tonne
         return new(x.Value / 1000.0);
     }
 
+    public static implicit operator tonne(g x)
+    {
+        return new(x.Value / 1000000.0);
+    }
+
 }
 
 
@@ -336,6 +376,11 @@ public readonly struct m_s
     public static m_s operator *(double a, m_s b)
     {
         return new(a * b.Value);
+    }
+
+    public static sec operator *(m_s a, m b)
+    {
+        return new(a.Value * b.Value);
     }
 
 }

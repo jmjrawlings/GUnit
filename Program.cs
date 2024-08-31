@@ -88,40 +88,73 @@ void WriteUnitClass(Unit unit)
 
     WriteConversions(unit);
 }
+
+void WriteScaled(Unit b, double factor, Unit t)
+{
     
+    using (b.Code.Implicit(b.Class, t.Class, "x"))
+        b.Code.Return($"new(x.Value * {factor:F1})");
+            
+    using (t.Code.Implicit(t.Class, b.Class, "x"))
+        t.Code.Return($"new(x.Value / {factor:F1})");
+    
+    if (b is Scale s)
+        WriteScaled(s.Base, factor * s.Factor, t);
+}
+
+void WriteMul(Unit a, Unit b, Unit t)
+{
+    // A * B = T
+    using (a.Code.Operator(t.Class, "*", $"{a.Class} a, {b.Class} b"))
+        a.Code.Return($"new(a.Value * b.Value)");
+    
+    if (a.Id == b.Id)
+        return;
+    
+    // B * A = T
+    using (b.Code.Operator(t.Class, "*", $"{b.Class} a, {a.Class} b"))
+        b.Code.Return($"new(a.Value * b.Value)");
+}
+void WriteDiv(Unit a, Unit b, Unit t)
+{
+    // A / B = T
+    using (a.Code.Operator(t.Class, "/", $"{a.Class} a, {b.Class} b"))
+        a.Code.Return($"new(a.Value / b.Value)");
+    
+    if (b.Id == t.Id)
+        return;
+            
+    // A / T = B
+    using (a.Code.Operator(b.Class, "/", $"{a.Class} a, {t.Class} b"))
+        a.Code.Return($"new(a.Value / b.Value)");
+}
+
 void WriteConversions(Unit t)
 {
     switch (t)
     {
         // Add implicit transforms for scaled units
         case Scale { Base: var b, Factor: var factor }:
-            
-            using (b.Code.Implicit(b.Class, t.Class, "x"))
-                b.Code.Return($"new(x.Value * {factor:F1})");
-            
-            using (t.Code.Implicit(t.Class, b.Class, "x"))
-                t.Code.Return($"new(x.Value / {factor:F1})");
-
+            WriteScaled( b, factor, t);
             break;
         
-        // Add construction via multiplication
+        // Add multiplication operators and the inverse
         case Mul { A: var a, B: var b }:
-            
-            using (a.Code.Operator(t.Class, "*", $"{a.Class} a, {b.Class} b"))
-                a.Code.Return($"new(a.Value * b.Value)");
-
-            using (b.Code.Operator(t.Class, "*", $"{b.Class} a, {a.Class} b"))
-                b.Code.Return($"new(a.Value * b.Value)");
-
+            WriteMul(a, b, t);
+            WriteDiv(t, a, b);
             break;
-
-        // Add construction via division
+       
+        // Add division operators, and the inverse
         case Div { A: var a, B: var b }:
-            
-            using (a.Code.Operator(t.Class, "/", $"{a.Class} a, {b.Class} b"))
-                a.Code.Return($"new(a.Value / b.Value)");
-
+            WriteDiv(a, b, t);
+            WriteMul(a, t, b);
             break;
+        
+        case Power { Base: var b, N: 2}:
+            WriteMul(b, b, t);
+            WriteDiv(t, b, b);
+            break;
+        
     }
 }
 
@@ -145,4 +178,4 @@ foreach (var unit in unitArray)
 
 cb.Dispose();
 code = cb.ToString();
-File.WriteAllText("C:/Users/hrkn/projects/GUnit/Unit.gen.cs", code);
+File.WriteAllText("C:/Users/hrkn/projects/GUnit/Unit.g.cs", code);
