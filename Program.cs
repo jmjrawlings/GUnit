@@ -91,7 +91,9 @@ foreach (var unit in unitList)
 }
 cb.WriteLn("namespace Units;");
 cb.NewLine();
-using (cb.Block("public interface IUnitOfMeasure<T> where T:IUnitOfMeasure<T>"))
+cb.WriteLn("using System.Numerics;");
+cb.NewLine();
+using (cb.Block($"public interface IUnitOfMeasure<T> where T:IUnitOfMeasure<T>, {Interfaces("T")}"))
 {
     cb.WriteLn("public double Value {get;}");
     cb.WriteLn("public abstract static string Name {get;}");
@@ -148,7 +150,7 @@ void WriteUnit(Unit t)
     var c = t.Class;
     var cb = t.Code;
     cb.Summary(t.Name);
-    cb.Block("public", "readonly", "struct", c, $": IUnitOfMeasure<{c}>, IFormattable");
+    cb.Block("public", "readonly", "struct", c, $": IUnitOfMeasure<{c}>, {Interfaces(c)} ");
     cb.WriteLn($"public static string Name => @\"{t.Name}\";");
     cb.WriteLn($"public static string Suffix => @\"{t.Suffix}\";");
     cb.WriteLn($"public static string TexUnitString => @\"{t.Tex}\";");
@@ -197,11 +199,7 @@ void WriteUnit(Unit t)
     switch (t)
     {
         case Scale s:
-            using (s.B.Code.Implicit(s.B.Class, t.Class, "x"))
-                s.B.Code.Return(t.New($"x.Value * {s.Factor:F1}"));
-
-            using (t.Code.Implicit(t.Class, s.B.Class, "x"))
-                t.Code.Return(t.New($"x.Value / {s.Factor:F1}"));
+            WriteScaled(s.B, s.Factor, t);
             break;
 
         case Mul { A: var a, B: var b }:
@@ -218,6 +216,19 @@ void WriteUnit(Unit t)
             WriteExp(b, n, t);
             break;
     }
+}
+
+void WriteScaled(Unit b, double factor, Unit t)
+{
+    using (b.Code.Implicit(b.Class, t.Class, "x"))
+        b.Code.Return(t.New($"x.Value * {factor:F1}"));
+
+    using (t.Code.Implicit(t.Class, b.Class, "x"))
+        t.Code.Return(t.New($"x.Value / {factor:F1}"));
+    
+    
+    
+    
 }
 
 Unit Pwr(Unit b, int n) => n switch
@@ -259,6 +270,9 @@ void WriteExp(Unit b, int n, Unit t)
         }
     }
 }
+
+string Interfaces(string t) =>
+    $"IFormattable, IAdditionOperators<{t},{t},{t}>, ISubtractionOperators<{t},{t},{t}>, IMultiplyOperators<{t}, double, {t}>, IDivisionOperators<{t},{t},double>, IMultiplyOperators<{t},int,{t}>, IDivisionOperators<{t},int,{t}>";
 
 void WriteMul(Unit a, Unit b, Unit t)
 {
