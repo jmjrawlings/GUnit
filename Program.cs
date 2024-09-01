@@ -30,6 +30,7 @@ var one = new One { Id = "unit", Class = "double", Name = "1", Suffix = "", Tex 
 var s2 = MkExp(s, 2);
 var m = new Scale(mm, 1000) {Id="m", Name = "metre", Tex = @"\metre", Class = "m", Suffix = "m"};
 var m2 = MkExp(m, 2);
+var m3 = MkExp(m, 3);
 var mm2 = MkExp(mm, 2);
 var mm3 = MkExp(mm, 3);
 var mm4 = MkExp(mm, 4);
@@ -38,6 +39,8 @@ var tonne = new Scale(kg, 1000) { Id="t", Name = "tonne", Tex = @"\tonne", Class
 var m_s = MkDiv(m, s) with { Name = "metres per second", Class = "m_s", Suffix= "m/s" };
 var N = MkMul(kg, m_s) with { Name = "newton", Tex = @"\newton", Class = "N" };
 var kN = new Scale(N, 1000) { Id="kN", Name = "kilonewton", Tex = @"\kilo\newton", Class = "kN" };
+var kNm = MkMul(kN, m);
+var kN_m = MkDiv(kN, m);
 var Pa = MkDiv(N, m2) with { Name = "pascal", Tex = @"\pascal", Class = "Pa" };
 var kPa = new Scale(Pa, 1000) {Id="kPA", Name = "kilopascal", Tex = @"\kilo\pascal", Class = "kPa" };
 var MPa = new Scale(kPa, 1000) {Id="MPa", Name = "megapascal", Tex = @"\mega\pascal", Class = "MPa" };
@@ -49,6 +52,7 @@ List<Unit> unitList =
     s, 
     m, 
     m2, 
+    m3,
     s2,
     mm2,
     mm3,
@@ -58,6 +62,8 @@ List<Unit> unitList =
     m_s,
     N,
     kN,
+    kNm,
+    kN_m,
     Pa,
     kPa,
     MPa,
@@ -89,8 +95,8 @@ using (cb.Block("public interface IUnitOfMeasure<T> where T:IUnitOfMeasure<T>"))
 {
     cb.WriteLn("public double Value {get;}");
     cb.WriteLn("public abstract static string Name {get;}");
+    cb.WriteLn("public abstract static string Suffix {get;}");
     cb.WriteLn("public abstract static string TexUnitString {get;}");
-    cb.WriteLn("public abstract static string UnitString {get;}");
     cb.WriteLn("public abstract static string TexUnitsOnly {get;}");
 }
 cb.NewLine();
@@ -144,26 +150,29 @@ void WriteUnit(Unit t)
     cb.Summary(t.Name);
     cb.Block("public", "readonly", "struct", c, $": IUnitOfMeasure<{c}>, IFormattable");
     cb.WriteLn($"public static string Name => @\"{t.Name}\";");
+    cb.WriteLn($"public static string Suffix => @\"{t.Suffix}\";");
     cb.WriteLn($"public static string TexUnitString => @\"{t.Tex}\";");
-    cb.WriteLn($"public static string UnitString => @\"{t.Suffix}\";");
-    cb.WriteLn($"public static string TexUnitsOnly => @\"\\si{{ TexUnitString }}\";");
+    cb.WriteLn("""public static string TexUnitsOnly => @$"\si{{ {TexUnitString} }}";""");
     cb.WriteLn("public double Value { get; }");
-    
+
     using (cb.Function($"public {c}", "double value"))
         cb.Assign("Value", "value");
-    
-    using (cb.Explicit(c, "double", "value"))
+
+    using (cb.Implicit(c, "double", "value"))
         cb.Return("new(value)");
-    
-    using (cb.Explicit(c, "int", "value"))
+
+    using (cb.Implicit(c, "int", "value"))
         cb.Return("new(value)");
-    
+
+    using (cb.Implicit("double", c, "x"))
+        cb.Return("x.Value");
+
     using (cb.Operator(c, "+", $"{c} a, {c} b"))
         cb.Return("new(a.Value + b.Value)");
-    
+
     using (cb.Operator(c, "-", $"{c} a, {c} b"))
         cb.Return("new(a.Value - b.Value)");
-    
+
     using (cb.Operator(c, "*", $"{c} a, int b"))
         cb.Return("new(a.Value * b)");
 
@@ -175,32 +184,40 @@ void WriteUnit(Unit t)
 
     using (cb.Operator(c, "*", $"double a, {c} b"))
         cb.Return(t.New("a * b.Value"));
-    
+
     using (cb.Operator("double", "/", $"{c} a, {c} b"))
         cb.Return("a.Value / b.Value");
-    
+
     using (cb.Operator(c, "/", $"{c} a, int b"))
         cb.Return(t.New("a.Value / b"));
-    
+
     using (cb.Operator(c, "/", $"{c} a, double b"))
         cb.Return(t.New("a.Value / b"));
 
-    if (t is Scale s) 
-        WriteScaled(s.Base, s.Factor, t);
-    
-    WriteOperators(t);
-}
+    switch (t)
+    {
+        case Scale s:
+            using (s.B.Code.Implicit(s.B.Class, t.Class, "x"))
+                s.B.Code.Return(t.New($"x.Value * {s.Factor:F1}"));
 
-void WriteScaled(Unit b, double factor, Unit t)
-{
-    using (b.Code.Implicit(b.Class, t.Class, "x"))
-        b.Code.Return(t.New($"x.Value * {factor:F1}"));
-            
-    using (t.Code.Implicit(t.Class, b.Class, "x"))
-        t.Code.Return(t.New($"x.Value / {factor:F1}"));
-    
-    if (b is Scale s)
-        WriteScaled(s.Base, factor * s.Factor, t);
+            using (t.Code.Implicit(t.Class, s.B.Class, "x"))
+                t.Code.Return(t.New($"x.Value / {s.Factor:F1}"));
+            break;
+
+        case Mul { A: var a, B: var b }:
+            WriteMul(a, b, t);
+            WriteDiv(t, a, b);
+            break;
+
+        case Div { A: var a, B: var b }:
+            WriteDiv(a, b, t);
+            WriteMul(b, t, a);
+            break;
+
+        case Exp { B: var b, N: var n }:
+            WriteExp(b, n, t);
+            break;
+    }
 }
 
 Unit Pwr(Unit b, int n) => n switch
@@ -226,6 +243,19 @@ void WriteExp(Unit b, int n, Unit t)
             Unit y = Pwr(b, n - i);
             WriteMul(x, y, t);
             WriteDiv(t, y, x);
+        }
+    }
+
+    if (b is Scale s)
+    {
+        for (int i = 2; i <= n; i++)
+        {
+            var bn = MkExp(s.B, i);
+            var fac = Math.Pow(s.Factor, i);
+            using (t.Code.Implicit(t.Class, bn.Class, "x"))
+                t.Code.Return($"new(x / {fac})");
+            using (bn.Code.Implicit(bn.Class, t.Class, "x"))
+                bn.Code.Return($"new(x * {fac})");
         }
     }
 }
@@ -256,27 +286,6 @@ void WriteDiv(Unit a, Unit b, Unit t)
     // A / T = B
     using (a.Code.Operator(b.Class, "/", $"{a.Class} a, {t.Class} b"))
         a.Code.Return(t.New($"a.Value / b.Value"));
-}
-
-void WriteOperators(Unit t)
-{
-    switch (t)
-    {
-        case Mul { A: var a, B: var b }:
-            WriteMul(a, b, t);
-            WriteDiv(t, a, b);
-            break;
-        
-        case Div { A: var a, B: var b }:
-            WriteDiv(a, b, t);
-            WriteMul(b, t, a);
-            break;
-        
-        case Exp { B: var b, N: var n}:
-            WriteExp(b, n, t);
-            break;
-
-    }
 }
 
 Unit MkExp(Unit b, int n)
@@ -344,7 +353,8 @@ Unit MkMul(Unit a, Unit b)
                 Id = $"{a.Id}.{b.Id}",
                 Name = $"{a.Name}.{b.Name}",
                 Tex = $"{a.Tex}{b.Tex}",
-                Suffix = $"{a.Suffix}.{b.Suffix}"
+                Suffix = $"{a.Suffix}.{b.Suffix}",
+                Class = $"{a.Class}{b.Class}"
             };
             break;
     }

@@ -33,7 +33,7 @@ public sealed record Mul(Unit A, Unit B) : Unit { }
 
 public sealed record Exp(Unit B, int N) : Unit { }
 
-public record Scale(Unit Base, double Factor) : Unit { }
+public record Scale(Unit B, double Factor) : Unit { }
 
 public sealed record One : Unit
 {
