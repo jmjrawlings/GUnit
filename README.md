@@ -18,7 +18,6 @@ kg c = a + b;
 ```
 
 
-
 ## Quickstart
 - Run `Program.cs`
 - It will generate `Units.g.cs`
